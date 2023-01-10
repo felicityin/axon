@@ -4,7 +4,7 @@ use std::error::Error;
 use std::sync::Arc;
 
 use json::JsonValue;
-use log::{error, info};
+use log::{error};
 use overlord::error::ConsensusError as OverlordError;
 use overlord::types::{Commit, Node, OverlordMsg, Status, ViewChangeReason};
 use overlord::{Consensus as Engine, Wal};
@@ -164,14 +164,14 @@ impl<Adapter: ConsensusAdapter + 'static> Engine<Proposal> for ConsensusEngine<A
         common_apm::metrics::consensus::CONSENSUS_CHECK_BLOCK_HISTOGRAM_VEC_STATIC
             .check_block_cost
             .observe(common_apm::metrics::duration_to_sec(time.elapsed()));
-        info!("[consensus-engine]: check block cost {:?}", time.elapsed());
+        // info!("[consensus-engine]: check block cost {:?}", time.elapsed());
 
         let time = Instant::now();
         let txs = self.adapter.get_full_txs(ctx, &tx_hashes).await?;
         common_apm::metrics::consensus::CONSENSUS_CHECK_BLOCK_HISTOGRAM_VEC_STATIC
             .get_txs_cost
             .observe(common_apm::metrics::duration_to_sec(time.elapsed()));
-        info!("[consensus-engine]: get txs cost {:?}", time.elapsed());
+        // info!("[consensus-engine]: get txs cost {:?}", time.elapsed());
 
         let time = Instant::now();
         self.txs_wal
@@ -179,11 +179,11 @@ impl<Adapter: ConsensusAdapter + 'static> Engine<Proposal> for ConsensusEngine<A
         common_apm::metrics::consensus::CONSENSUS_CHECK_BLOCK_HISTOGRAM_VEC_STATIC
             .write_wal_cost
             .observe(common_apm::metrics::duration_to_sec(time.elapsed()));
-        info!(
-            "[consensus-engine]: write wal cost {:?} tx_hashes_len {:?}",
-            time.elapsed(),
-            tx_hashes_len
-        );
+        // info!(
+        //     "[consensus-engine]: write wal cost {:?} tx_hashes_len {:?}",
+        //     time.elapsed(),
+        //     tx_hashes_len
+        // );
 
         Ok(())
     }
@@ -268,11 +268,11 @@ impl<Adapter: ConsensusAdapter + 'static> Engine<Proposal> for ConsensusEngine<A
             )
             .await?;
 
-        info!(
-            "[consensus]: validator of number {} is {:?}",
-            current_number + 1,
-            metadata.verifier_list
-        );
+        // info!(
+        //     "[consensus]: validator of number {} is {:?}",
+        //     current_number + 1,
+        //     metadata.verifier_list
+        // );
 
         self.update_status(ctx.clone(), resp, proposal.clone(), proof, signed_txs)
             .await?;

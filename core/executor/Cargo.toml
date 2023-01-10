@@ -9,6 +9,7 @@ arc-swap = "1.6"
 az = "1.2"
 bn = { package = "substrate-bn", version = "0.6" }
 
+array-bytes = "6.0"
 ckb-types = "0.106"
 common-apm = { path = "../../common/apm" }
 common-config-parser = { path = "../../common/config-parser" }
@@ -20,6 +21,7 @@ ethers = "1.0"
 evm = { version = "0.37", features = ["tracing"] }
 futures = "0.3"
 hasher = "0.1"
+hex = "0.4"
 lazy_static = "1.4"
 log = "0.4"
 molecule = "0.7"

@@ -122,6 +122,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
+name = "array-bytes"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22f72e9d6fac4bc80778ea470b20197b88d28c292bb7d60c3fb099280003cd19"
+
+[[package]]
 name = "arrayref"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1604,6 +1610,7 @@ name = "core-executor"
 version = "0.1.0"
 dependencies = [
  "arc-swap",
+ "array-bytes",
  "axon-protocol",
  "az",
  "bytemuck",
@@ -1631,6 +1638,7 @@ dependencies = [
  "getrandom 0.2.8",
  "hashbrown 0.13.1",
  "hasher",
+ "hex",
  "lazy_static",
  "log",
  "molecule",

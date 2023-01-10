@@ -24,9 +24,8 @@ use crate::MPTTrie;
 
 pub use abi::image_cell_abi;
 pub use error::{ImageCellError, ImageCellResult};
-pub use store::{cell_key, header_key, CellInfo, CellKey, HeaderKey};
-use store::{get_cell, get_header};
-use trie_db::RocksTrieDB;
+pub use store::{cell_key, get_cell, get_header, header_key, CellInfo, CellKey, HeaderKey};
+pub use trie_db::RocksTrieDB;
 
 static ALLOW_READ: AtomicBool = AtomicBool::new(false);
 static TRIE_DB: OnceCell<Arc<RocksTrieDB>> = OnceCell::new();
@@ -73,7 +72,7 @@ impl SystemContract for ImageCellContract {
                         return revert_resp(*tx.gas_limit());
                     }
                 };
-
+                println!("=====================root: {:?}", root);
                 update_mpt_root(backend, root);
             }
             Ok(image_cell_abi::ImageCellCalls::Rollback(data)) => {

@@ -207,10 +207,10 @@ where
         gas_limit: U256,
         tx_num_limit: u64,
     ) -> ProtocolResult<PackedTxHashes> {
-        log::info!(
-            "[core_mempool]: {:?} txs in map while package",
-            self.pool.len(),
-        );
+        // log::info!(
+        //     "[core_mempool]: {:?} txs in map while package",
+        //     self.pool.len(),
+        // );
         let inst = Instant::now();
         let txs = self.pool.package(gas_limit, tx_num_limit as usize);
 
@@ -229,10 +229,10 @@ where
         tx_hashes: &[Hash],
         current_number: BlockNumber,
     ) -> ProtocolResult<()> {
-        log::info!(
-            "[core_mempool]: flush mempool with {:?} tx_hashes",
-            tx_hashes.len(),
-        );
+        // log::info!(
+        //     "[core_mempool]: flush mempool with {:?} tx_hashes",
+        //     tx_hashes.len(),
+        // );
         self.adapter.clear_nonce_cache();
         self.pool.flush(tx_hashes, current_number);
         Ok(())
