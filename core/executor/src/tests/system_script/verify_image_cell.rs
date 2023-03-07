@@ -1,18 +1,18 @@
 use std::sync::Arc;
 
-use ckb_types::{bytes::Bytes, packed, prelude::*};
+use ckb_types::{bytes::Bytes, h256, packed, prelude::*};
 
 use common_config_parser::types::ConfigRocksDB;
 use protocol::types::H256;
 
 use crate::system_contract::image_cell::{
-    get_cell, image_cell_abi, CellInfo,
+    image_cell_abi, get_cell, init, update_mpt_root, CellInfo, CellKey, ImageCellContract, RocksTrieDB,
 };
 use crate::MPTTrie;
 
 use super::*;
 
-const ROCKDB_PATH: &str = "src/tests/system_script/image_cell_data";
+const ROCKSDB_PATH: &str = "src/tests/system_script/image_cell_data";
 // const ROCKDB_PATH: &str = "../../devtools/chain/data/rocksdb/image_cell_data";
 
 // copy from terminal: core/executor/src/system_contract/image_cell/mod.rs:L75
@@ -20,11 +20,23 @@ const ROOT: &str = "a877d142221e08cd27d2293e56446dd7b2108b5813e39271dbc107736ae0
 
 #[test]
 fn inspect_mpt() {
+    // let vicinity = gen_vicinity();
+    // let mut backend = MemoryBackend::new(&vicinity, BTreeMap::new());
+    // // update_mpt_root(&mut backend,  H256(h256!("0xa877d142221e08cd27d2293e56446dd7b2108b5813e39271dbc107736ae01c19").0));
+    // update_mpt_root(&mut backend,  H256(decode_hex("0xa877d142221e08cd27d2293e56446dd7b2108b5813e39271dbc107736ae01c19")));
+
+    // let executor = ImageCellContract::default();
+    // init(
+    //     ROCKSDB_PATH,
+    //     ConfigRocksDB::default(),
+    //     Arc::new(backend.clone()),
+    // );
+
     let root = H256(decode_hex(ROOT));
     println!("root: {:?}", root);
 
     let trie_db = RocksTrieDB::new(
-        ROCKDB_PATH,
+        ROCKSDB_PATH,
         ConfigRocksDB::default(),
         100,
     ).expect("[image cell] new rocksdb error");
@@ -33,8 +45,13 @@ fn inspect_mpt() {
     let block_number = 0x5fe340;
     println!("block_number: {:?}", block_number);
 
-    let tx_hash = decode_hex("3d9075de60200689507f8c389be6101b1d4496ba9ef0a6b272ba37fd24f3a24b");
-    let cell = get_cell(&mpt, &cell_key(&tx_hash, 0x0)).unwrap().unwrap();
+    let cell_key = CellKey::new(
+        decode_hex("3d9075de60200689507f8c389be6101b1d4496ba9ef0a6b272ba37fd24f3a24b"), 
+        0x0
+    );
+
+    // let cell = executor.get_cell(&cell_key).unwrap().unwrap();
+    let cell = get_cell(&mpt, &cell_key).unwrap().unwrap();
     println!("\n---------------cell------------------\n");
     println!("data: {:?}\n", cell.cell_data);
     println!("output: {}\n",  packed::CellOutput::new_unchecked(cell.cell_output.clone()));

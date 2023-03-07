@@ -22,8 +22,8 @@ use protocol::types::{
 };
 
 use crate::system_contract::error::{SystemScriptError, SystemScriptResult};
-use crate::system_contract::image_cell::store::get_cell;
-use crate::system_contract::{
+pub use crate::system_contract::image_cell::store::get_cell;
+pub use crate::system_contract::{
     image_cell::trie_db::RocksTrieDB, system_contract_address, SystemContract,
 };
 use crate::MPTTrie;
@@ -81,7 +81,6 @@ impl SystemContract for ImageCellContract {
                         return revert_resp(*tx.gas_limit());
                     }
                 };
-                println!("=====================root: {:?}", root);
                 update_mpt_root(backend, root);
             }
             Ok(image_cell_abi::ImageCellCalls::Rollback(data)) => {
@@ -140,7 +139,7 @@ fn get_mpt() -> SystemScriptResult<MPTTrie<RocksTrieDB>> {
     }
 }
 
-fn update_mpt_root<B: Backend + ApplyBackend>(backend: &mut B, root: H256) {
+pub fn update_mpt_root<B: Backend + ApplyBackend>(backend: &mut B, root: H256) {
     let account = backend.basic(ImageCellContract::ADDRESS);
     CURRENT_CELL_ROOT.swap(Arc::new(root));
     backend.apply(
