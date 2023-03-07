@@ -1,14 +1,17 @@
 use std::sync::Arc;
 
-use ckb_types::{bytes::Bytes, h256, packed, prelude::*};
-
+use ckb_types::{bytes::Bytes, packed, prelude::*};
+use ckb_types::core::TransactionView;
 use common_config_parser::types::ConfigRocksDB;
-use protocol::types::H256;
+use core_rpc_client::RpcClient;
+
+use protocol::tokio;
+use protocol::traits::CkbClient;
+use protocol::types::{H256, OutPoint};
 
 use crate::system_contract::image_cell::{
-    image_cell_abi, get_cell, init, update_mpt_root, CellInfo, CellKey, ImageCellContract, RocksTrieDB,
+    image_cell_abi, init, update_mpt_root, CellInfo, CellKey, ImageCellContract,
 };
-use crate::MPTTrie;
 
 use super::*;
 
@@ -16,48 +19,48 @@ const ROCKSDB_PATH: &str = "src/tests/system_script/image_cell_data";
 // const ROCKDB_PATH: &str = "../../devtools/chain/data/rocksdb/image_cell_data";
 
 // copy from terminal: core/executor/src/system_contract/image_cell/mod.rs:L75
-const ROOT: &str = "a877d142221e08cd27d2293e56446dd7b2108b5813e39271dbc107736ae01c19";
+const ROOT: &str = "da6471312971240f520a3f159871deac4d88e1e20f260a4ebe19feaa143bf46d";
 
-#[test]
-fn inspect_mpt() {
-    // let vicinity = gen_vicinity();
-    // let mut backend = MemoryBackend::new(&vicinity, BTreeMap::new());
-    // // update_mpt_root(&mut backend,  H256(h256!("0xa877d142221e08cd27d2293e56446dd7b2108b5813e39271dbc107736ae01c19").0));
-    // update_mpt_root(&mut backend,  H256(decode_hex("0xa877d142221e08cd27d2293e56446dd7b2108b5813e39271dbc107736ae01c19")));
+lazy_static::lazy_static! {
+    pub static ref RPC: RpcClient = init_rpc_client();
+}
 
-    // let executor = ImageCellContract::default();
-    // init(
-    //     ROCKSDB_PATH,
-    //     ConfigRocksDB::default(),
-    //     Arc::new(backend.clone()),
-    // );
+#[tokio::test(flavor = "multi_thread")]
+async fn inspect_mpt() {
+    init_rpc_client();
 
-    let root = H256(decode_hex(ROOT));
-    println!("root: {:?}", root);
+    let vicinity = gen_vicinity();
+    let mut backend = MemoryBackend::new(&vicinity, BTreeMap::new());
+    update_mpt_root(&mut backend,  H256(decode_hex(ROOT)));
 
-    let trie_db = RocksTrieDB::new(
+    let executor = ImageCellContract::default();
+    init(
         ROCKSDB_PATH,
         ConfigRocksDB::default(),
-        100,
-    ).expect("[image cell] new rocksdb error");
-    let mpt = MPTTrie::from_root(root, Arc::new(trie_db)).unwrap();
+        Arc::new(backend.clone()),
+    );
 
-    let block_number = 0x5fe340;
+    let block_number = 6318236;
     println!("block_number: {:?}", block_number);
 
     let cell_key = CellKey::new(
-        decode_hex("3d9075de60200689507f8c389be6101b1d4496ba9ef0a6b272ba37fd24f3a24b"), 
+        decode_hex("ff25295d3cc036969f8498f53af4df3a3be3841a4730287881ebe29f8f92234b"), 
         0x0
     );
 
-    // let cell = executor.get_cell(&cell_key).unwrap().unwrap();
-    let cell = get_cell(&mpt, &cell_key).unwrap().unwrap();
+    let cell = executor.get_cell(&cell_key).unwrap().unwrap();
     println!("\n---------------cell------------------\n");
     println!("data: {:?}\n", cell.cell_data);
     println!("output: {}\n",  packed::CellOutput::new_unchecked(cell.cell_output.clone()));
     println!("created_number: {:?}\n", cell.created_number);
     println!("consumed_number: {:?}\n", cell.consumed_number);
-    check_cell(&cell, &right_outputs()[0], block_number, None);
+
+    let expect_cell = get_cell_by_out_point(OutPoint {
+        tx_hash: H256(decode_hex("ff25295d3cc036969f8498f53af4df3a3be3841a4730287881ebe29f8f92234b")),
+        index:   0x0,
+    })
+    .await;
+    check_cell(&cell, &expect_cell, block_number, None);
 }
 
 pub fn decode_hex(s: &str) -> [u8; 32] {
@@ -108,25 +111,63 @@ fn check_script(get_script: &packed::Script, script: &image_cell_abi::Script) {
     assert_eq!(get_script.args().raw_data(), args.raw_data());
 }
 
-fn right_outputs() -> Vec<image_cell_abi::CellInfo> {
-    vec![image_cell_abi::CellInfo {
-        out_point: image_cell_abi::OutPoint {
-            tx_hash: decode_hex("3d9075de60200689507f8c389be6101b1d4496ba9ef0a6b272ba37fd24f3a24b"),
-            index:   0x0,
+async fn get_cell_by_out_point(out_point: OutPoint) -> image_cell_abi::CellInfo {
+    let (cell, data) = get_ckb_tx(out_point.tx_hash.0)
+        .await
+        .output_with_data(out_point.index as usize)
+        .unwrap();
+
+    let lock_script = image_cell_abi::Script {
+        code_hash: cell.lock().code_hash().unpack().0,
+        hash_type: cell.lock().hash_type().as_slice()[0],
+        args:      {
+            let tmp: Vec<u8> = cell.lock().args().unpack();
+            tmp.into()
         },
-        output:    image_cell_abi::CellOutput {
-            capacity: 0x277cf2a00,
-            lock:     image_cell_abi::Script {
-                args:      ethers::core::types::Bytes::from_str("0x5989ae415bb667931a99896e5fbbfad9ba53a223").unwrap(),
-                code_hash: decode_hex("9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8"),
-                hash_type: 1,
+    };
+    let mut type_script = vec![];
+    if let Some(s) = cell.type_().to_opt() {
+        type_script.push(image_cell_abi::Script {
+            code_hash: s.code_hash().unpack().0,
+            hash_type: s.hash_type().as_slice()[0],
+            args:      {
+                let tmp: Vec<u8> = s.args().unpack();
+                tmp.into()
             },
-            type_:    vec![image_cell_abi::Script {
-                args:      ethers::core::types::Bytes::from_str("0x").unwrap(),
-                code_hash: decode_hex("82d76d1b75fe2fd9a27dfbaa65a039221a380d76c926f378d3f81cf3e7e13f2e"),
-                hash_type: 1,
-            }],
-        },
-        data:      ethers::core::types::Bytes::from_str("0x0000000000000000").unwrap(),
-    }]
+        })
+    }
+
+    let cell_output = image_cell_abi::CellOutput {
+        capacity: cell.capacity().unpack(),
+        lock:     lock_script,
+        type_:    type_script,
+    };
+
+    image_cell_abi::CellInfo {
+        out_point: out_point.into(),
+        output:    cell_output,
+        data:      data.into(),
+    }
+}
+
+async fn get_ckb_tx<T: Into<ckb_types::H256>>(hash: T) -> TransactionView {
+    let tx: packed::Transaction = RPC
+        .get_txs_by_hashes(Default::default(), vec![hash.into()])
+        .await
+        .unwrap()
+        .get(0)
+        .cloned()
+        .unwrap()
+        .unwrap()
+        .inner
+        .into();
+    tx.into_view()
+}
+
+fn init_rpc_client() -> RpcClient {
+    RpcClient::new(
+        "https://testnet.ckb.dev/",
+        "http://127.0.0.1:8116",
+        "http://127.0.0.1:8118",
+    )
 }

@@ -72,6 +72,7 @@ fn save_cells(
         };
 
         let key = CellKey::new(cell.out_point.tx_hash, cell.out_point.index);
+        println!("===============key: {:?}", &key);
 
         insert_cell(mpt, &key, &cell_info)?;
     }
