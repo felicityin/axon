@@ -41,7 +41,7 @@ fn test_write_functions() {
 
 fn test_update_first(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::UpdateCall {
-        header:  prepare_header(),
+        block_number: 0x1,
         inputs:  vec![],
         outputs: prepare_outputs(),
     };
@@ -62,7 +62,7 @@ fn test_update_first(backend: &mut MemoryBackend, executor: &ImageCellContract) 
 
 fn test_update_second(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::UpdateCall {
-        header:  prepare_header_2(),
+        block_number: 0x2,
         inputs:  vec![image_cell_abi::OutPoint {
             tx_hash: [7u8; 32],
             index:   0x0,
@@ -82,8 +82,6 @@ fn test_update_second(backend: &mut MemoryBackend, executor: &ImageCellContract)
 
 fn test_rollback_first(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::RollbackCall {
-        block_hash:   [4u8; 32],
-        block_number: 0x2,
         inputs:       vec![image_cell_abi::OutPoint {
             tx_hash: [7u8; 32],
             index:   0x0,
@@ -107,8 +105,6 @@ fn test_rollback_first(backend: &mut MemoryBackend, executor: &ImageCellContract
 
 fn test_rollback_second(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::RollbackCall {
-        block_hash:   [5u8; 32],
-        block_number: 0x1,
         inputs:       vec![],
         outputs:      vec![image_cell_abi::OutPoint {
             tx_hash: [7u8; 32],
@@ -151,42 +147,6 @@ fn check_root(backend: &MemoryBackend, executor: &ImageCellContract) {
     );
 }
 
-fn check_header(get_header: &packed::Header) {
-    let header = prepare_header();
-
-    let nonce: packed::Uint128 = header.nonce.pack();
-    assert_eq!(get_header.nonce().raw_data(), nonce.raw_data());
-
-    let get_header = get_header.raw();
-
-    assert_eq!(get_header.dao(), header.dao.pack());
-    assert_eq!(get_header.extra_hash(), header.block_hash.pack());
-    assert_eq!(get_header.parent_hash(), header.parent_hash.pack());
-    assert_eq!(get_header.proposals_hash(), header.proposals_hash.pack());
-    assert_eq!(
-        get_header.transactions_root(),
-        header.transactions_root.pack()
-    );
-
-    let version: packed::Uint32 = header.version.pack();
-    assert_eq!(get_header.version().raw_data(), version.raw_data());
-
-    let compact_target: packed::Uint32 = header.compact_target.pack();
-    assert_eq!(
-        get_header.compact_target().raw_data(),
-        compact_target.raw_data()
-    );
-
-    let timestamp: packed::Uint64 = header.timestamp.pack();
-    assert_eq!(get_header.timestamp().raw_data(), timestamp.raw_data());
-
-    let number: packed::Uint64 = header.number.pack();
-    assert_eq!(get_header.number().raw_data(), number.raw_data());
-
-    let epoch: packed::Uint64 = header.epoch.pack();
-    assert_eq!(get_header.epoch().raw_data(), epoch.raw_data());
-}
-
 fn check_cell(get_cell: &CellInfo, created_number: u64, consumed_number: Option<u64>) {
     let cell = &prepare_outputs()[0];
 
@@ -225,40 +185,6 @@ fn check_script(get_script: &packed::Script, script: &image_cell_abi::Script) {
 
     let args: packed::Bytes = script.args.pack();
     assert_eq!(get_script.args().raw_data(), args.raw_data());
-}
-
-fn prepare_header() -> image_cell_abi::Header {
-    image_cell_abi::Header {
-        version:           0x0,
-        compact_target:    0x1a9c7b1a,
-        timestamp:         0x16e62df76ed,
-        number:            0x1,
-        epoch:             0x7080291000049,
-        parent_hash:       [0u8; 32],
-        transactions_root: [1u8; 32],
-        proposals_hash:    [2u8; 32],
-        uncles_hash:       [3u8; 32],
-        dao:               [4u8; 32],
-        nonce:             0x78b105de64fc38a200000004139b0200,
-        block_hash:        [4u8; 32],
-    }
-}
-
-fn prepare_header_2() -> image_cell_abi::Header {
-    image_cell_abi::Header {
-        version:           0x0,
-        compact_target:    0x1a9c7b1a,
-        timestamp:         0x16e62df76ed,
-        number:            0x2,
-        epoch:             0x7080291000049,
-        parent_hash:       [0u8; 32],
-        transactions_root: [1u8; 32],
-        proposals_hash:    [2u8; 32],
-        uncles_hash:       [3u8; 32],
-        dao:               [4u8; 32],
-        nonce:             0x78b105de64fc38a200000004139b0200,
-        block_hash:        [5u8; 32],
-    }
 }
 
 fn prepare_outputs() -> Vec<image_cell_abi::CellInfo> {

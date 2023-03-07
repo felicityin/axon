@@ -16,7 +16,7 @@ use parking_lot::Mutex;
 use common_apm_derive::trace_span;
 use common_crypto::{Crypto, Secp256k1Recoverable};
 use core_executor::{
-    is_call_system_script, system_contract::image_cell::DataProvider, AxonExecutor,
+    is_call_system_script, system_contract::DataProvider, AxonExecutor,
     AxonExecutorAdapter,
 };
 use core_interoperation::InteroperationImpl;
