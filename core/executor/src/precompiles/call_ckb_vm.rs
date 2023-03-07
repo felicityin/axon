@@ -2,11 +2,13 @@ use evm::executor::stack::{PrecompileFailure, PrecompileOutput};
 use evm::{Context, ExitError, ExitSucceed};
 use rlp::Rlp;
 
-use core_interoperation::{cycle_to_gas, gas_to_cycle, InteroperationImpl};
-use protocol::{traits::Interoperation, types::H160};
+use protocol::traits::Interoperation;
+use protocol::types::{CellDep, H160, H256};
 
-use crate::err;
+use core_interoperation::{cycle_to_gas, gas_to_cycle, InteroperationImpl};
+
 use crate::precompiles::{precompile_address, PrecompileContract};
+use crate::{err, system_contract::DataProvider};
 
 macro_rules! try_rlp {
     ($rlp_: expr, $func: ident, $pos: expr) => {{
@@ -18,7 +20,7 @@ macro_rules! try_rlp {
 pub struct CkbVM;
 
 impl PrecompileContract for CkbVM {
-    const ADDRESS: H160 = precompile_address(0xff);
+    const ADDRESS: H160 = precompile_address(0xf2);
     const MIN_GAS: u64 = 500;
 
     fn exec_fn(
@@ -29,14 +31,14 @@ impl PrecompileContract for CkbVM {
     ) -> Result<(PrecompileOutput, u64), PrecompileFailure> {
         if let Some(gas) = gas_limit {
             let rlp = Rlp::new(input);
-            let res = InteroperationImpl::default()
-                .call_ckb_vm(
-                    Default::default(),
-                    try_rlp!(rlp, val_at, 0),
-                    &try_rlp!(rlp, list_at, 1),
-                    gas_to_cycle(gas),
-                )
-                .map_err(|e| err!(_, e.to_string()))?;
+            let res = <InteroperationImpl as Interoperation>::call_ckb_vm(
+                Default::default(),
+                &DataProvider::default(),
+                get_cell_dep(&rlp)?,
+                &try_rlp!(rlp, list_at, 3),
+                gas_to_cycle(gas),
+            )
+            .map_err(|e| err!(_, e.to_string()))?;
 
             return Ok((
                 PrecompileOutput {
@@ -53,4 +55,16 @@ impl PrecompileContract for CkbVM {
     fn gas_cost(_input: &[u8]) -> u64 {
         unreachable!()
     }
+}
+
+fn get_cell_dep(rlp: &Rlp) -> Result<CellDep, PrecompileFailure> {
+    let tx_hash: H256 = try_rlp!(rlp, val_at, 0);
+    let index: u32 = try_rlp!(rlp, val_at, 1);
+    let dep_type: u8 = try_rlp!(rlp, val_at, 2);
+
+    Ok(CellDep {
+        tx_hash,
+        index,
+        dep_type,
+    })
 }

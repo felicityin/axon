@@ -3,6 +3,7 @@ use std::sync::Arc;
 use jsonrpsee::core::Error;
 
 use common_apm::metrics_rpc;
+use protocol::lazy::PROTOCOL_VERSION;
 use protocol::traits::{APIAdapter, Context};
 use protocol::types::{
     Block, BlockNumber, Bytes, Hash, Header, Hex, Receipt, SignedTransaction, TxResp,
@@ -717,42 +718,73 @@ impl<Adapter: APIAdapter + 'static> AxonWeb3RpcServer for Web3RpcImpl<Adapter> {
 
         Ok(Hex::encode(&value))
     }
+
+    #[metrics_rpc("eth_protocolVersion")]
+    async fn protocol_version(&self) -> RpcResult<Hex> {
+        Ok((**PROTOCOL_VERSION.load()).clone())
+    }
+
+    #[metrics_rpc("eth_getUncleByBlockHashAndIndex")]
+    async fn get_uncle_by_block_hash_and_index(
+        &self,
+        _hash: Hash,
+        _index: U256,
+    ) -> RpcResult<Option<Web3Block>> {
+        Ok(None)
+    }
+
+    #[metrics_rpc("eth_getUncleByBlockNumberAndIndex")]
+    async fn get_uncle_by_block_number_and_index(
+        &self,
+        _number: BlockId,
+        _index: U256,
+    ) -> RpcResult<Option<Web3Block>> {
+        Ok(None)
+    }
+
+    #[metrics_rpc("eth_getUncleCountByBlockHash")]
+    async fn get_uncle_count_by_block_hash(&self, _hash: Hash) -> RpcResult<U256> {
+        Ok(U256::zero())
+    }
+
+    #[metrics_rpc("eth_getUncleCountByBlockNumber")]
+    async fn get_uncle_count_by_block_number(&self, _number: BlockId) -> RpcResult<U256> {
+        Ok(U256::zero())
+    }
 }
 
 fn mock_header_by_call_req(latest_header: Header, call_req: &Web3CallRequest) -> Header {
     Header {
-        prev_hash:                  latest_header.prev_hash,
-        proposer:                   latest_header.proposer,
-        state_root:                 latest_header.state_root,
-        transactions_root:          Default::default(),
-        signed_txs_hash:            Default::default(),
-        receipts_root:              Default::default(),
-        log_bloom:                  Default::default(),
-        difficulty:                 latest_header.difficulty,
-        timestamp:                  latest_header.timestamp,
-        number:                     latest_header.number,
-        gas_used:                   latest_header.gas_used,
-        gas_limit:                  if let Some(gas_limit) = call_req.gas {
+        prev_hash:         latest_header.prev_hash,
+        proposer:          latest_header.proposer,
+        state_root:        latest_header.state_root,
+        transactions_root: Default::default(),
+        signed_txs_hash:   Default::default(),
+        receipts_root:     Default::default(),
+        log_bloom:         Default::default(),
+        difficulty:        latest_header.difficulty,
+        timestamp:         latest_header.timestamp,
+        number:            latest_header.number,
+        gas_used:          latest_header.gas_used,
+        gas_limit:         if let Some(gas_limit) = call_req.gas {
             gas_limit
         } else {
             latest_header.gas_limit
         },
-        extra_data:                 Default::default(),
-        mixed_hash:                 None,
-        nonce:                      if let Some(nonce) = call_req.nonce {
+        extra_data:        Default::default(),
+        mixed_hash:        None,
+        nonce:             if let Some(nonce) = call_req.nonce {
             H64::from_low_u64_le(nonce.as_u64())
         } else {
             latest_header.nonce
         },
-        base_fee_per_gas:           if let Some(base_fee) = call_req.max_fee_per_gas {
+        base_fee_per_gas:  if let Some(base_fee) = call_req.max_fee_per_gas {
             base_fee
         } else {
             latest_header.base_fee_per_gas
         },
-        proof:                      latest_header.proof,
-        last_checkpoint_block_hash: latest_header.last_checkpoint_block_hash,
-        call_system_script_count:   0,
-        chain_id:                   latest_header.chain_id,
+        proof:             latest_header.proof,
+        chain_id:          latest_header.chain_id,
     }
 }
 
