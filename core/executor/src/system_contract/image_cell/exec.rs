@@ -13,9 +13,10 @@ pub fn update(
     mpt: &mut MPTTrie<RocksTrieDB>,
     data: image_cell_abi::UpdateCall,
 ) -> ProtocolResult<MerkleRoot> {
-    save_cells(mpt, data.outputs, data.block_number)?;
-
-    mark_cells_consumed(mpt, data.inputs, data.block_number)?;
+    for block in data.blocks {
+        save_cells(mpt, block.tx_outputs, block.block_number)?;
+        mark_cells_consumed(mpt, block.tx_inputs, block.block_number)?;
+    }
 
     commit(mpt)
 }
@@ -24,9 +25,10 @@ pub fn rollback(
     mpt: &mut MPTTrie<RocksTrieDB>,
     data: image_cell_abi::RollbackCall,
 ) -> ProtocolResult<MerkleRoot> {
-    remove_cells(mpt, data.outputs)?;
-
-    mark_cells_not_consumed(mpt, data.inputs)?;
+    for block in data.blocks {
+        remove_cells(mpt, block.tx_outputs)?;
+        mark_cells_not_consumed(mpt, block.tx_inputs)?;
+    }
 
     commit(mpt)
 }
