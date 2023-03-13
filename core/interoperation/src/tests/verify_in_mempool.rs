@@ -2,15 +2,9 @@ use ckb_types::core::{DepType, TransactionView};
 use ckb_types::{h256, packed, prelude::*};
 use ethers_core::abi::AbiEncode;
 
-<<<<<<< HEAD
-use core_executor::system_contract::DataProvider;
-use core_executor::system_contract::image_cell::image_cell_abi;
-use protocol::types::{CellDep, OutPoint, Witness, H256};
-=======
 use core_executor::system_contract::image_cell::image_cell_abi;
 use core_executor::system_contract::DataProvider;
 use protocol::types::{CellDep, OutPoint, SignatureR, SignatureS, Witness, H256};
->>>>>>> main
 use protocol::{codec::hex_decode, tokio, traits::CkbClient, traits::Interoperation};
 
 use crate::tests::{mock_signed_tx, TestHandle, RPC};
@@ -156,13 +150,8 @@ async fn test_verify_joyid_with_sub_key() {
 async fn build_image_cell_payload<T: Into<ckb_types::H256>>(tx_hash: T) -> Vec<u8> {
     image_cell_abi::UpdateCall {
         block_number: 0,
-<<<<<<< HEAD
-        inputs:  vec![],
-        outputs: get_tx_cells(tx_hash).await,
-=======
         inputs:       vec![],
         outputs:      get_tx_cells(tx_hash).await,
->>>>>>> main
     }
     .encode()
 }

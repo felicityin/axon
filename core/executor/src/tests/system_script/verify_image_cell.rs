@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::collections::BTreeMap;
 
 use ckb_types::{bytes::Bytes, packed, prelude::*};
 use ckb_types::core::TransactionView;
@@ -7,19 +7,18 @@ use core_rpc_client::RpcClient;
 
 use protocol::tokio;
 use protocol::traits::CkbClient;
-use protocol::types::{H256, OutPoint};
+use protocol::types::{H256, MemoryBackend, OutPoint};
 
+use crate::tests::gen_vicinity;
 use crate::system_contract::image_cell::{
     image_cell_abi, init, update_mpt_root, CellInfo, CellKey, ImageCellContract,
 };
 
-use super::*;
-
 const ROCKSDB_PATH: &str = "src/tests/system_script/image_cell_data";
 // const ROCKDB_PATH: &str = "../../devtools/chain/data/rocksdb/image_cell_data";
 
-// copy from terminal: core/executor/src/system_contract/image_cell/mod.rs:L75
-const ROOT: &str = "da6471312971240f520a3f159871deac4d88e1e20f260a4ebe19feaa143bf46d";
+// copy from terminal: core/executor/src/system_contract/image_cell/mod.rs:L88
+const ROOT: &str = "1d5009e0540bb7a519302efe0566562d283084aca6cad515d75859ec1295c450";
 
 lazy_static::lazy_static! {
     pub static ref RPC: RpcClient = init_rpc_client();
@@ -37,15 +36,15 @@ async fn inspect_mpt() {
     init(
         ROCKSDB_PATH,
         ConfigRocksDB::default(),
-        Arc::new(backend.clone()),
+        backend,
     );
 
-    let block_number = 6318236;
+    let block_number = 8336555;
     println!("block_number: {:?}", block_number);
 
     let cell_key = CellKey::new(
-        decode_hex("ff25295d3cc036969f8498f53af4df3a3be3841a4730287881ebe29f8f92234b"), 
-        0x0
+        decode_hex("5f2a53f3ae308ecbc1915f43363a1688519da88a35363f90674c007230c09182"), 
+        0x1
     );
 
     let cell = executor.get_cell(&cell_key).unwrap().unwrap();
@@ -56,8 +55,8 @@ async fn inspect_mpt() {
     println!("consumed_number: {:?}\n", cell.consumed_number);
 
     let expect_cell = get_cell_by_out_point(OutPoint {
-        tx_hash: H256(decode_hex("ff25295d3cc036969f8498f53af4df3a3be3841a4730287881ebe29f8f92234b")),
-        index:   0x0,
+        tx_hash: H256(decode_hex("5f2a53f3ae308ecbc1915f43363a1688519da88a35363f90674c007230c09182")),
+        index:   0x1,
     })
     .await;
     check_cell(&cell, &expect_cell, block_number, None);

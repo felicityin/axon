@@ -85,7 +85,7 @@ impl SystemContract for ImageCellContract {
                     gas_limit,
                     "[image cell] update error:"
                 );
-
+                println!("======================root: {:?}", root);
                 update_mpt_root(backend, root);
             }
             Ok(image_cell_abi::ImageCellCalls::Rollback(data)) => {

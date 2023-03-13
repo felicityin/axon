@@ -38,14 +38,11 @@ fn test_write_functions() {
 
 fn test_update_first(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::UpdateCall {
-        block_number: 0x1,
-<<<<<<< HEAD
-        inputs:  vec![],
-        outputs: prepare_outputs(),
-=======
-        inputs:       vec![],
-        outputs:      prepare_outputs(),
->>>>>>> main
+        blocks: vec![image_cell_abi::BlockUpdate {
+            block_number: 0x1,
+            tx_inputs:    vec![],
+            tx_outputs:   prepare_outputs(),
+        }],
     };
 
     let r = exec(backend, executor, data.encode());
@@ -60,16 +57,14 @@ fn test_update_first(backend: &mut MemoryBackend, executor: &ImageCellContract) 
 
 fn test_update_second(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::UpdateCall {
-        block_number: 0x2,
-<<<<<<< HEAD
-        inputs:  vec![image_cell_abi::OutPoint {
-=======
-        inputs:       vec![image_cell_abi::OutPoint {
->>>>>>> main
-            tx_hash: [7u8; 32],
-            index:   0x0,
+        blocks: vec![image_cell_abi::BlockUpdate {
+            block_number: 0x2,
+            tx_inputs:    vec![image_cell_abi::OutPoint {
+                tx_hash: [7u8; 32],
+                index:   0x0,
+            }],
+            tx_outputs:   vec![],
         }],
-        outputs:      vec![],
     };
 
     let r = exec(backend, executor, data.encode());
@@ -84,15 +79,13 @@ fn test_update_second(backend: &mut MemoryBackend, executor: &ImageCellContract)
 
 fn test_rollback_first(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::RollbackCall {
-<<<<<<< HEAD
-        inputs:       vec![image_cell_abi::OutPoint {
-=======
-        inputs:  vec![image_cell_abi::OutPoint {
->>>>>>> main
-            tx_hash: [7u8; 32],
-            index:   0x0,
+        blocks: vec![image_cell_abi::BlockRollBlack {
+            tx_inputs:  vec![image_cell_abi::OutPoint {
+                tx_hash: [7u8; 32],
+                index:   0x0,
+            }],
+            tx_outputs: vec![],
         }],
-        outputs: vec![],
     };
 
     let r = exec(backend, executor, data.encode());
@@ -107,15 +100,12 @@ fn test_rollback_first(backend: &mut MemoryBackend, executor: &ImageCellContract
 
 fn test_rollback_second(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::RollbackCall {
-<<<<<<< HEAD
-        inputs:       vec![],
-        outputs:      vec![image_cell_abi::OutPoint {
-=======
-        inputs:  vec![],
-        outputs: vec![image_cell_abi::OutPoint {
->>>>>>> main
-            tx_hash: [7u8; 32],
-            index:   0x0,
+        blocks: vec![image_cell_abi::BlockRollBlack {
+            tx_inputs:  vec![],
+            tx_outputs: vec![image_cell_abi::OutPoint {
+                tx_hash: [7u8; 32],
+                index:   0x0,
+            }],
         }],
     };
 
