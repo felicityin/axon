@@ -18,18 +18,22 @@
 
 ## What is Axon
 
-Axon is a high-performance layer2 framework with native cross-chain function. Built on top of the [Overlord](https://github.com/nervosnetwork/overlord) consensus protocol and the P2P network [Tentacle](https://github.com/nervosnetwork/tentacle)
+Axon is a high-performance Layer 2 framework with native cross-chain function. Built on top of the [Overlord](https://github.com/nervosnetwork/overlord) consensus protocol and the P2P network [Tentacle](https://github.com/nervosnetwork/tentacle)
 , Axon supports hundreds of nodes and achieves thousands of TPS. Axon is also EVM-compatible with well-developed toolchains. Its high interoperability facilitates cross-chain communication among dApps.
 
 ## Highlights
 
 ### Developer-Friendly Design
 
-Axon is compatible with [Ethereum](https://ethereum.org) so that all of the develop utilities can be used on it directly. And the [Axon CLI](https://github.com/axonweb3/axon-cli) provides an all-in-one client which includes initialization, DevOps, cross-chain request and so on. Seeing is believing, there is a [15 minutes tutorial](https://docs.axonweb3.io/getting-started/for-dapp-devs/zero_to_axon_with_axon_cli) that will lead you to build your own chain and deploy a tiny application.
+Axon is compatible with [Ethereum](https://ethereum.org) so that all of the develop utilities can be used on it directly. And the [Axon CLI](https://github.com/axonweb3/axon-cli) provides an all-in-one client which includes initialization, DevOps, cross-chain request and so on. Seeing is believing, there is a [15 minutes tutorial](https://docs.axonweb3.io/getting-started/for-dapp-devs/zero_to_axon_with_axon_cli) that will lead you to build your own chain and deploy your application.
 
-### Native Cross-chain Communication
+### Native Cross-Chain Communication
 
 Openness and mobility are the foundation of social development, so is blockchain. Cross-chain function enhances liquidity for the web3 ecosystem. Axon develops native cross-chain communication without any bridge. Each Axon-based chain can speak to [CKB](https://www.nervos.org), other Axon-based chains, and any [IBC](https://ibcprotocol.org) compatible chains. Axon will embed more cross-chain protocols in the future.
+
+### Staking on Layer 1 CKB
+
+Axon supports a Proof-of-Stake (PoS) consensus mechanism and requires each Axon-based appchain to issue native Extensible User Defined Tokens (xUDTs), which are designed and customized by the app chain's development team and released on CKB. For simplicity, the xUDTs on Axon-based chains are referred to as Axon tokens (AT tokens) below. Holders of AT tokens can stake to become validators and/or delegate their tokens to other validators in exchange for rewards. Unlike other sidechains where staking takes place on Layer 2, Axon's staking is grounded on Layer 1 CKB. Validators and other participants stake their native AT tokens on CKB, which uses a Proof-of-Work (PoW) consensus mechanism. This unique staking design helps Axon-based appchains enjoy the highest degree of decentralization and security from Layer 1 while maintain their high performance and sovereignty as independent Layer 2 networks. 
 
 ## Roadmap
 
@@ -52,9 +56,9 @@ cargo run --release -- -c devtools/chain/config.toml -g devtools/chain/genesis_s
 
 Read the [docs](https://docs.axonweb3.io/) and follow the [tutorials](https://docs.axonweb3.io/getting-started/for-dapp-devs/zero_to_axon_with_axon_cli).
 
-## Toolchain
+## Toolchains
 
-Apart from the framework, Axon has toolchains:
+Apart from the framework, Axon has:
 
 - [Axon Faucet](https://github.com/axonweb3/axon-faucet): the faucet for the Axon-based chains.
 - [Axon Explorer](https://github.com/Magickbase/blockscan): a blockchain explorer for the Axon-based chains.

@@ -1,16 +1,17 @@
-use std::sync::Arc;
+use std::collections::BTreeMap;
+use std::str::FromStr;
 
 use ckb_types::{bytes::Bytes, packed, prelude::*};
 use ethers::abi::AbiEncode;
 
 use common_config_parser::types::ConfigRocksDB;
-use protocol::types::{Hasher, TxResp};
+use protocol::types::{Hasher, MemoryBackend, TxResp, H160, H256};
 
-use super::*;
 use crate::system_contract::image_cell::{
     image_cell_abi, init, CellInfo, CellKey, ImageCellContract,
 };
 use crate::system_contract::SystemContract;
+use crate::tests::{gen_tx, gen_vicinity};
 
 static ROCKSDB_PATH: &str = "./free-space/image-cell";
 
@@ -24,11 +25,7 @@ fn test_write_functions() {
     let mut backend = MemoryBackend::new(&vicinity, BTreeMap::new());
 
     let executor = ImageCellContract::default();
-    init(
-        ROCKSDB_PATH,
-        ConfigRocksDB::default(),
-        Arc::new(backend.clone()),
-    );
+    init(ROCKSDB_PATH, ConfigRocksDB::default(), backend.clone());
 
     test_update_first(&mut backend, &executor);
     test_update_second(&mut backend, &executor);
@@ -42,8 +39,13 @@ fn test_write_functions() {
 fn test_update_first(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::UpdateCall {
         block_number: 0x1,
+<<<<<<< HEAD
         inputs:  vec![],
         outputs: prepare_outputs(),
+=======
+        inputs:       vec![],
+        outputs:      prepare_outputs(),
+>>>>>>> main
     };
 
     let r = exec(backend, executor, data.encode());
@@ -59,11 +61,15 @@ fn test_update_first(backend: &mut MemoryBackend, executor: &ImageCellContract) 
 fn test_update_second(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::UpdateCall {
         block_number: 0x2,
+<<<<<<< HEAD
         inputs:  vec![image_cell_abi::OutPoint {
+=======
+        inputs:       vec![image_cell_abi::OutPoint {
+>>>>>>> main
             tx_hash: [7u8; 32],
             index:   0x0,
         }],
-        outputs: vec![],
+        outputs:      vec![],
     };
 
     let r = exec(backend, executor, data.encode());
@@ -78,11 +84,15 @@ fn test_update_second(backend: &mut MemoryBackend, executor: &ImageCellContract)
 
 fn test_rollback_first(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::RollbackCall {
+<<<<<<< HEAD
         inputs:       vec![image_cell_abi::OutPoint {
+=======
+        inputs:  vec![image_cell_abi::OutPoint {
+>>>>>>> main
             tx_hash: [7u8; 32],
             index:   0x0,
         }],
-        outputs:      vec![],
+        outputs: vec![],
     };
 
     let r = exec(backend, executor, data.encode());
@@ -97,8 +107,13 @@ fn test_rollback_first(backend: &mut MemoryBackend, executor: &ImageCellContract
 
 fn test_rollback_second(backend: &mut MemoryBackend, executor: &ImageCellContract) {
     let data = image_cell_abi::RollbackCall {
+<<<<<<< HEAD
         inputs:       vec![],
         outputs:      vec![image_cell_abi::OutPoint {
+=======
+        inputs:  vec![],
+        outputs: vec![image_cell_abi::OutPoint {
+>>>>>>> main
             tx_hash: [7u8; 32],
             index:   0x0,
         }],

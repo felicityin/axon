@@ -102,7 +102,7 @@ pub mod image_cell {
         abi = "rollback((bytes32,uint32)[],(bytes32,uint32)[])"
     )]
     pub struct RollbackCall {
-        pub inputs: ::std::vec::Vec<OutPoint>,
+        pub inputs:  ::std::vec::Vec<OutPoint>,
         pub outputs: ::std::vec::Vec<OutPoint>,
     }
     #[doc = "Container type for all input parameters for the `setState` function with signature `setState(bool)` and selector `[172, 159, 2, 34]`"]
@@ -135,8 +135,8 @@ pub mod image_cell {
     )]
     pub struct UpdateCall {
         pub block_number: u64,
-        pub inputs: ::std::vec::Vec<OutPoint>,
-        pub outputs: ::std::vec::Vec<CellInfo>,
+        pub inputs:       ::std::vec::Vec<OutPoint>,
+        pub outputs:      ::std::vec::Vec<CellInfo>,
     }
     #[derive(Debug, Clone, PartialEq, Eq, ethers::contract::EthAbiType)]
     pub enum ImageCellCalls {
@@ -225,8 +225,8 @@ pub mod image_cell {
     )]
     pub struct CellOutput {
         pub capacity: u64,
-        pub lock: Script,
-        pub type_: ::std::vec::Vec<Script>,
+        pub lock:     Script,
+        pub type_:    ::std::vec::Vec<Script>,
     }
     #[doc = "`OutPoint(bytes32,uint32)`"]
     #[derive(
