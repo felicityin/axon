@@ -61,7 +61,7 @@ impl PrecompileContract for GetCell {
 
 fn parse_input(input: &[u8]) -> Result<(H256, u32), PrecompileFailure> {
     let contract = parse_abi(&[
-        "function getCell(bytes32 txHash, uint32 index) external returns (tuple(bool exists, bool hasTypeScript, bool hasConsumedNumber, uint64 createdNumber, uint64 consumedNumber, uint64 capacity, uint8 lockHashType, uint8 typeHashType, bytes lockCodeHash, bytes typeCodeHash, bytes lockArgs, bytes typeArgs, bytes data) memory)",
+        "function getCell(bytes32 txHash, uint32 index) external returns (tuple(bool exists, bool hasTypeScript, bool hasConsumedNumber, uint64 createdNumber, uint64 consumedNumber, uint64 capacity, tuple(uint8 lockHashType, bytes lockCodeHash, bytes lockArgs), tuple(uint8 typeHashType, bytes typeCodeHash, bytes typeArgs), bytes data) memory)",
     ]).map_err(|_| err!(_, "invalid abi"))?;
 
     let function = contract
@@ -110,12 +110,16 @@ fn encode_cell(cell: CellInfo) -> Vec<u8> {
         Token::Uint(U256::from(cell.created_number)),
         Token::Uint(U256::from(cell.consumed_number.unwrap_or(0))),
         Token::Uint(U256::from(capacity)),
-        Token::Uint(U256::from(lock_hash_type)),
-        Token::Uint(U256::from(type_hash_type)),
-        Token::Bytes(lock.code_hash().as_bytes().to_vec()),
-        Token::Bytes(type_code_hash),
-        Token::Bytes(lock.args().as_bytes().to_vec()),
-        Token::Bytes(type_args),
+        Token::Tuple(vec![
+            Token::Uint(U256::from(lock_hash_type)),
+            Token::Bytes(lock.code_hash().as_bytes().to_vec()),
+            Token::Bytes(lock.args().as_bytes().to_vec()),
+        ]),
+        Token::Tuple(vec![
+            Token::Uint(U256::from(type_hash_type)),
+            Token::Bytes(type_code_hash),
+            Token::Bytes(type_args),
+        ]),
         Token::Bytes(cell.cell_data.to_vec()),
     ])])
 }
@@ -128,12 +132,16 @@ fn encode_default() -> Vec<u8> {
         Token::Uint(U256::from(0)),
         Token::Uint(U256::from(0)),
         Token::Uint(U256::from(0)),
-        Token::Uint(U256::from(0)),
-        Token::Uint(U256::from(0)),
-        Token::Bytes(Vec::new()),
-        Token::Bytes(Vec::new()),
-        Token::Bytes(Vec::new()),
-        Token::Bytes(Vec::new()),
+        Token::Tuple(vec![
+            Token::Uint(U256::from(0)),
+            Token::Bytes(Vec::new()),
+            Token::Bytes(Vec::new()),
+        ]),
+        Token::Tuple(vec![
+            Token::Uint(U256::from(0)),
+            Token::Bytes(Vec::new()),
+            Token::Bytes(Vec::new()),
+        ]),
         Token::Bytes(Vec::new()),
     ])])
 }
